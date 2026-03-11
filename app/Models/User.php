@@ -18,11 +18,15 @@ class User extends Model implements AuthenticatableContract
     protected $collection = 'users';
 
     // الحقول المسموح بكتابتها
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+  protected $fillable = [
+    'name',
+    'email',
+    'password',
+    'google_id',
+    'facebook_id',
+    'instagram_id',
+    'avatar',
+];
 
     // إخفاء الباسورد عند إرسال البيانات للفلاتر
     protected $hidden = [
