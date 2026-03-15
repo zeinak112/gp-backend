@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
-{ // <--- القوس ده كان ناقص
+{ 
 
     // 1. وظيفة التسجيل التقليدي (Register)
     public function register(Request $request)
@@ -100,33 +100,39 @@ class AuthController extends Controller
         }
     }
 
-    // 4. نسيان الباسورد
+   // 4. نسيان الباسورد (التأكد من الحساب وإرجاع كود وهمي)
     public function forgotPassword(Request $request)
     {
         $request->validate(['email' => 'required|email']);
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
-            return response()->json(['message' => 'Email not found!'], 404);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Email not found!'
+            ], 404);
         }
 
+        // بنرجع كود 1234 عشان بنت الفلاتر تعمل بيه Check عندها
         return response()->json([
-            'message' => 'Email verified. You can now reset your password.',
-            'status' => 'success'
+            'status' => 'success',
+            'message' => 'Email verified. Use the verification code to reset your password.',
+            'otp_code' => '1234' 
         ], 200);
     }
 
-    // 5. تعيين الباسورد الجديد
+    // 5. تعيين الباسورد الجديد (بعد التأكد من الكود في الموبايل)
     public function resetPassword(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
             'password' => [
-                'required', 'min:8', 'max:50',
+                'required', 'confirmed', 'min:8', 'max:50',
                 'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[@$!%*#?&]/',
             ],
         ], [
             'password.regex' => 'Password must be strong (Uppercase, Lowercase, Numbers, and Symbols).',
+            'password.confirmed' => 'Password confirmation does not match.',
         ]);
 
         $user = User::where('email', $request->email)->first();
@@ -135,8 +141,15 @@ class AuthController extends Controller
             return response()->json(['message' => 'User not found!'], 404);
         }
 
-        $user->update(['password' => Hash::make($request->password)]);
-        return response()->json(['message' => 'Password reset successfully.'], 200);
+        // تحديث الباسورد في المونجو
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Password reset successfully. You can now login with your new password.'
+        ], 200);
     }
 
-} // <--- والقوس ده كمان كان ناقص في الآخر
+} 
