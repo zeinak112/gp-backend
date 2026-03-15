@@ -114,10 +114,10 @@ return [
         ], 
         
 // Add MongoDB connection configuration
-   'mongodb' => [
+  'mongodb' => [
     'driver' => 'mongodb',
-    'dsn' => 'mongodb+srv://omnia3526:123123123@cluster0.vck4dou.mongodb.net/fitness_app?retryWrites=true&w=majority',
-    'database' => 'fitness_app',
+    'dsn' => env('MONGODB_URI', 'mongodb+srv://omnia3526:Omn159159@cluster0.vck4dou.mongodb.net/fitness_app?retryWrites=true&w=majority'),
+    'database' => env('DB_DATABASE', 'fitness_app'),
 ],
     ],
 

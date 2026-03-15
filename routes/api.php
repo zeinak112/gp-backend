@@ -15,3 +15,10 @@ Route::get('/get-all-users', function () {
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/social-login', [AuthController::class, 'socialLogin']);
+
+
+// مسار لطلب إرسال كود التحقق (أو التأكد من وجود الإيميل)
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+
+// مسار لتعيين الباسورد الجديد (بعد ما اليوزر يتأكد من إيميله)
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);   
