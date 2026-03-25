@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    // تحديث النوع
+    
     public function updateGender(Request $request)
     {
         $request->validate([
