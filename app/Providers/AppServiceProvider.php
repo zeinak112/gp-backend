@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
+use MongoDB\Laravel\Auth\AccessToken as PersonalAccessToken; 
+use Laravel\Sanctum\Sanctum;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -19,6 +22,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // السطر ده هو اللي هيحل مشكلة الـ prepare() on null للأبد
+        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
     }
 }

@@ -3,33 +3,30 @@
 namespace App\Models;
 
 
-use MongoDB\Laravel\Eloquent\Model; 
+use MongoDB\Laravel\Auth\User as Authenticatable; 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Auth\Authenticatable;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Laravel\Sanctum\HasApiTokens; 
 
-class User extends Model implements AuthenticatableContract
+class User extends Authenticatable 
 {
-    use HasFactory, Notifiable, Authenticatable;
+    // ضيفي HasApiTokens هنا عشان الـ createToken تشتغل
+    use HasApiTokens, HasFactory, Notifiable;
 
-  
     protected $connection = 'mongodb';
     protected $collection = 'users';
 
-    
-  protected $fillable = [
-    'name',
-    'email',
-    'password',
-    'google_id',
-    'facebook_id',
-    'instagram_id',
-    'avatar',
-    'gender',
-];
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'google_id',
+        'facebook_id',
+        'instagram_id',
+        'avatar',
+        'gender',
+    ];
 
-    
     protected $hidden = [
         'password',
         'remember_token',
