@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// استخدام كلاس الموديل الخاص بالمونجو بدلاً من الـ Eloquent العادي
+
 use MongoDB\Laravel\Eloquent\Model; 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
@@ -13,11 +13,11 @@ class User extends Model implements AuthenticatableContract
 {
     use HasFactory, Notifiable, Authenticatable;
 
-    // تحديد نوع الاتصال واسم الكولكشن
+  
     protected $connection = 'mongodb';
     protected $collection = 'users';
 
-    // الحقول المسموح بكتابتها
+    
   protected $fillable = [
     'name',
     'email',
@@ -26,9 +26,10 @@ class User extends Model implements AuthenticatableContract
     'facebook_id',
     'instagram_id',
     'avatar',
+    'gender',
 ];
 
-    // إخفاء الباسورد عند إرسال البيانات للفلاتر
+    
     protected $hidden = [
         'password',
         'remember_token',

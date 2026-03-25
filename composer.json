@@ -77,17 +77,21 @@
         }
     },
    "config": {
-        "optimize-autoloader": true,
-        "preferred-install": "dist",
-        "sort-packages": true,
-        "allow-plugins": {
-            "pestphp/pest-plugin": true,
-            "php-http/discovery": true
-        },
-        "audit": {
-            "ignore": ["PKSA-2cx9-ynrq-qdk3"]
-        }
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "allow-plugins": {
+        "pestphp/pest-plugin": true,
+        "php-http/discovery": true
     },
+    "audit": {
+        "ignore": [
+            "PKSA-2cx9-ynrq-qdk3",
+            "PKSA-21fb-n1x5-5nf7",
+            "PKSA-km2b-zc3b-mjm3"
+        ]
+    }
+  },
     "minimum-stability": "stable",
     "prefer-stable": true
 }
