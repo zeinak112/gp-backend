@@ -16,10 +16,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/social-login', [AuthController::class, 'socialLogin']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);   
-//Route::middleware('auth:sanctum')->group(function () {
-    //Route::post('/profile/update-gender', [UserController::class, 'updateGender']);
-   // Route::post('/profile/update-physical', [UserController::class, 'updatePhysicalInfo']);
-//});
-
-Route::post('/profile/update-gender', [UserController::class, 'updateGender']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/profile/update-gender', [UserController::class, 'updateGender']);
+    Route::post('/profile/update-physical', [UserController::class, 'updatePhysicalInfo']);
+});
 
