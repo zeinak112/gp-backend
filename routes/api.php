@@ -1,5 +1,8 @@
 
 <?php
+Route::get('/test-server', function() {
+    return response()->json(['message' => 'Server is Alive!']);
+});
 
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
