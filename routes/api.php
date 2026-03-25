@@ -18,4 +18,5 @@ Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);   
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/profile/update-gender', [UserController::class, 'updateGender']);
+    Route::post('/profile/update-physical', [UserController::class, 'updatePhysicalInfo']);
 });

@@ -82,27 +82,5 @@ class AuthController extends Controller
         return response()->json(['status' => 'success', 'message' => 'Password reset successfully.'], 200);
     }
 
-    // 6. Update Gender
-    // 6. Update Gender
-    public function updateGender(Request $request)
-    {
-        $request->validate(['gender' => 'required|in:male,female,Male,Female']);
-
-        // استخدمي Request عشان تجيبي اليوزر، دي أضمن وبتقلل الـ Errors
-        $user = $request->user();
-
-        if (!$user) {
-            return response()->json(['message' => 'Unauthorized - Please Login First'], 401);
-        }
-
-        $user->update([
-            'gender' => strtolower($request->gender)
-        ]);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Gender updated successfully',
-            'data' => ['gender' => $user->gender]
-        ], 200);
-    }
+    
 }
