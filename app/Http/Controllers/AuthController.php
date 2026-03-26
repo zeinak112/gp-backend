@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Models\User; // السطر المنقذ 1
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Hash; // السطر المنقذ 2
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
-{
-    // 1. Register
+{    // 1. Register
     public function register(Request $request)
     {
         $request->validate([
@@ -29,17 +28,24 @@ class AuthController extends Controller
     }
 
     // 2. Login
-    public function login(Request $request)
-    {
-        $request->validate(['email' => 'required|email', 'password' => 'required']);
-        $user = User::where('email', $request->email)->first();
+public function login(Request $request)
+{
+    $request->validate(['email' => 'required|email', 'password' => 'required']);
+    $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
-        }
-
-        return response()->json(['message' => 'Logged in successfully!', 'user' => $user], 200);
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'Invalid credentials'], 401);
     }
+
+   
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'message' => 'Logged in successfully!',
+        'user' => $user,
+        'token' => $token 
+    ], 200);
+}
 
     // 3. Social Login
     public function socialLogin(Request $request)
