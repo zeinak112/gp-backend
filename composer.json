@@ -5,14 +5,14 @@
     "description": "The skeleton application for the Laravel framework.",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
-   "require": {
+    "require": {
         "php": "^8.2",
         "ext-mongodb": "*",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.25",
         "laravel/tinker": "^2.10.1",
-       "mongodb/laravel-mongodb": "^5.0"
+        "mongodb/laravel-mongodb": "^5.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -43,14 +43,6 @@
             "npm install",
             "npm run build"
         ],
-        "dev": [
-            "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
-        ],
-        "test": [
-            "@php artisan config:clear --ansi",
-            "@php artisan test"
-        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
@@ -63,34 +55,18 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
-           
-        ],
-        "pre-package-uninstall": [
-            "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\""
         ]
     },
-    "extra": {
-        "laravel": {
-            "dont-discover": []
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
         }
     },
-   "config": {
-    "optimize-autoloader": true,
-    "preferred-install": "dist",
-    "sort-packages": true,
-    "allow-plugins": {
-        "pestphp/pest-plugin": true,
-        "php-http/discovery": true
-    },
-    "audit": {
-        "ignore": [
-            "PKSA-2cx9-ynrq-qdk3",
-            "PKSA-21fb-n1x5-5nf7",
-            "PKSA-km2b-zc3b-mjm3"
-        ]
-    }
-  },
     "minimum-stability": "stable",
     "prefer-stable": true
 }
