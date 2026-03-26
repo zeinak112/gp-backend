@@ -3,47 +3,28 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
     public function updateGender(Request $request)
-    {
-        $request->validate(['gender' => 'required|in:male,female,Male,Female']);
+{
+    // بنقبل male أو female زي ما ظاهر في الصور بتاعتك
+    $request->validate(['gender' => 'required|in:male,female,Male,Female']);
+    
+    $user = $request->user(); 
 
-        // هنجيب اليوزر بالتوكن
-        $user = $request->user();
+    // بنحدث جدول البروفايل لليوزر ده بالظبط
+    $updated = DB::collection('profiles')->where('user_id', $user->_id)->update([
+        'gender' => strtolower($request->gender),
+        'updated_at' => now()
+    ]);
 
-        if (!$user) {
-            return response()->json(['message' => 'User not found (Check Token)'], 401);
-        }
+    return response()->json([
+        'status' => true,
+        'message' => 'Gender saved successfully!',
+        'next_step' => 'Redirect to Physical Info screen'
+    ]);
+}
 
-        $user->update(['gender' => strtolower($request->gender)]);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Gender updated successfully!',
-            'data' => ['gender' => $user->gender]
-        ]);
-    }
-
-    public function updatePhysicalInfo(Request $request)
-    {
-        $request->validate([
-            'height' => 'required|numeric',
-            'weight' => 'required|numeric',
-        ]);
-
-        $user = $request->user();
-        $user->update([
-            'height' => $request->height,
-            'weight' => $request->weight,
-        ]);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Physical info updated successfully!',
-            'data' => ['height' => $user->height, 'weight' => $user->weight]
-        ]);
-    }
 }
