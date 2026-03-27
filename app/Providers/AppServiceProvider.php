@@ -18,13 +18,5 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-   public function boot(): void
-    {
-    
-        Artisan::call('config:clear');
-        Artisan::call('cache:clear');
-
-        
-       
-    }
+  
 }
