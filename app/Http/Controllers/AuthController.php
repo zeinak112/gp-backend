@@ -24,26 +24,37 @@ class AuthController extends Controller
             return response()->json(['message' => 'The email has already been taken.'], 422);
         }
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+       
+$user = User::create([
+    'name' => $request->name,
+    'email' => $request->email,
+    'password' => Hash::make($request->password),
+]);
 
-        $plainTextToken = Str::random(40);
-        $token = $user->tokens()->create([
-            'name' => 'auth_token',
-            'token' => hash('sha256', $plainTextToken),
-            'abilities' => ['*'],
-        ]);
 
-        $tokenString = $token->_id . '|' . $plainTextToken;
+$plainTextToken = \Illuminate\Support\Str::random(40);
 
-        return response()->json([
-            'message' => 'Account created successfully',
-            'user' => $user,
-            'token' => $tokenString 
-        ], 201);
+
+$tokenData = \Illuminate\Support\Facades\DB::connection('mongodb')
+    ->collection('personal_access_tokens')
+    ->insert([
+        'tokenable_id'   => $user->_id,
+        'tokenable_type' => get_class($user),
+        'name'           => 'auth_token',
+        'token'          => hash('sha256', $plainTextToken),
+        'abilities'      => ['*'],
+        'created_at'     => now(),
+        'updated_at'     => now(),
+    ]);
+
+
+$tokenString = $user->_id . '|' . $plainTextToken;
+
+return response()->json([
+    'message' => 'Account created successfully',
+    'user' => $user,
+    'token' => $tokenString 
+], 201);
     }
 
     // 2. Login
@@ -104,7 +115,7 @@ class AuthController extends Controller
                 ]);
             }
 
-            // نطبق نفس الحل اليدوي هنا أيضاً
+           
             $plainTextToken = Str::random(40);
             $token = $user->tokens()->create([
                 'name' => 'auth_token',
