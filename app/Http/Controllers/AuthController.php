@@ -14,21 +14,32 @@ class AuthController extends Controller
     // 1. Register
     public function register(Request $request)
     {
+        // Validation بسيط بدون unique (عشان م يضربش أيرور الـ collection)
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => ['required', 'email', 'unique:mongodb.users,email'],
+            'email' => 'required|email',
             'password' => ['required', 'min:8', 'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[@$!%*#?&]/'],
         ]);
 
+        // التحقق من الإيميل يدوياً من المونجو
+        $userExists = User::on('mongodb')->where('email', $request->email)->first();
+        if ($userExists) {
+            return response()->json([
+                'message' => 'The email has already been taken.',
+                'errors' => [
+                    'email' => ['The email has already been taken.']
+                ]
+            ], 422);
+        }
+
+        // إنشاء اليوزر في المونجو
         $user = User::on('mongodb')->create([
              'name' => $request->name,
              'email' => $request->email,
              'password' => Hash::make($request->password),
         ]);
 
-      
-
-
+        // إصدار التوكن
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -41,8 +52,12 @@ class AuthController extends Controller
     // 2. Login
     public function login(Request $request)
     {
-        $request->validate(['email' => 'required|email', 'password' => 'required']);
+        $request->validate([
+            'email' => 'required|email', 
+            'password' => 'required'
+        ]);
 
+        // البحث في المونجو
         $user = User::on('mongodb')->where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
@@ -83,8 +98,6 @@ class AuthController extends Controller
                     $request->provider . '_id' => $socialUser->getId(),
                     'avatar' => $socialUser->getAvatar(),
                 ]);
-
-               
             }
 
             $token = $user->createToken('auth_token')->plainTextToken;
