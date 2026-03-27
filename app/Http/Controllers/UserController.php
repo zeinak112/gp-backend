@@ -7,18 +7,17 @@ use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
-    // 1. تحديث النوع (Gender)
+    
     public function updateGender(Request $request)
     {
-        // بنقبل القيم اللي الموبايل هيبعتها (male او female)
         $request->validate([
             'gender' => 'required|in:male,female,Male,Female'
         ]);
         
-        $user = $request->user(); // بجيب اليوزر من التوكن
+        $user = $request->user();
 
-        // بنروح نحدث السطر اللي كريتناه في الـ register
-        DB::collection('profiles')->where('user_id', $user->_id)->update([
+      
+        DB::connection('mongodb')->collection('profiles')->where('user_id', $user->_id)->update([
             'gender' => strtolower($request->gender),
             'updated_at' => now()
         ]);
@@ -30,7 +29,7 @@ class UserController extends Controller
         ]);
     }
 
-    // 2. تحديث الطول والوزن (Physical Info)
+    
     public function updatePhysicalInfo(Request $request)
     {
         $request->validate([
@@ -40,8 +39,8 @@ class UserController extends Controller
 
         $user = $request->user();
 
-        // تحديث الطول والوزن في نفس جدول الـ profiles
-        DB::collection('profiles')->where('user_id', $user->_id)->update([
+        
+        DB::connection('mongodb')->collection('profiles')->where('user_id', $user->_id)->update([
             'height' => $request->height,
             'weight' => $request->weight,
             'updated_at' => now()
