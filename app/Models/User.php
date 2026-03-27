@@ -1,15 +1,19 @@
 <?php
+
 namespace App\Models;
 
-use MongoDB\Laravel\Auth\User as Authenticatable; 
+
+use MongoDB\Laravel\Eloquent\Model as Eloquent;
+use Illuminate\Auth\Authenticatable as AuthenticableTrait;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Laravel\Sanctum\HasApiTokens; 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\NewAccessToken; // سطر جديد مهم
 
-class User extends Authenticatable 
+class User extends Eloquent implements Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    
+    use HasApiTokens, HasFactory, Notifiable, AuthenticableTrait;
 
     protected $connection = 'mongodb';
     protected $collection = 'users';
@@ -23,15 +27,5 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
-        public function createToken(string $name, array $abilities = ['*'], $expiresAt = null)
-    {
-        $token = $this->tokens()->create([
-            'name' => $name,
-            'token' => hash('sha256', $plainTextToken = \Illuminate\Support\Str::random(40)),
-            'abilities' => $abilities,
-            'expires_at' => $expiresAt,
-        ]);
-
-        return new NewAccessToken($token, $token->getKey().'|'.$plainTextToken);
-    }
+    
 }

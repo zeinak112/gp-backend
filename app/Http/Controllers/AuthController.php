@@ -12,42 +12,38 @@ use Illuminate\Support\Facades\DB;
 class AuthController extends Controller
 {
     // 1. Register
-    public function register(Request $request)
-    {
-       
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'password' => ['required', 'min:8', 'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[@$!%*#?&]/'],
-        ]);
+public function register(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email',
+    
+        'password' => ['required', 'min:8', 'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[@$!%*#?&]/'],
+    ]);
 
-      
-        $userExists = User::on('mongodb')->where('email', $request->email)->first();
-        if ($userExists) {
-            return response()->json([
-                'message' => 'The email has already been taken.',
-                'errors' => [
-                    'email' => ['The email has already been taken.']
-                ]
-            ], 422);
-        }
-
-        
-        $user = User::create([
-              'name' => $request->name,
-             'email' => $request->email,
-             'password' => Hash::make($request->password),
-        ]);
-        
-        $token = $user->createToken('auth_token')->plainTextToken;
-
+   
+    $userExists = User::where('email', $request->email)->first();
+    if ($userExists) {
         return response()->json([
-            'message' => 'Account created successfully',
-            'user' => $user,
-            'token' => $token
-        ], 201);
+            'message' => 'The email has already been taken.',
+        ], 422);
     }
 
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+    ]);
+    
+    
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'message' => 'Account created successfully',
+        'user' => $user,
+        'token' => $token
+    ], 201);
+}
     // 2. Login
     public function login(Request $request)
     {
@@ -56,7 +52,7 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        // البحث في المونجو
+      
         $user = User::on('mongodb')->where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
