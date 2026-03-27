@@ -55,87 +55,99 @@ return response()->json([
     'token' => $tokenString 
 ], 201);
     }
-    // 2. Login
-    public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email', 
-            'password' => 'required'
-        ]);
+   // 2. Login
+public function login(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email', 
+        'password' => 'required'
+    ]);
 
-        $user = User::where('email', $request->email)->first();
+    // البحث عن المستخدم في المونجو
+    $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'Invalid credentials'], 401);
+    }
+
+    // --- بداية الحل اليدوي للتوكن (زي ما عملنا في الـ Register) ---
+    $plainTextToken = \Illuminate\Support\Str::random(40);
+
+    \Illuminate\Support\Facades\DB::table('personal_access_tokens')->insert([
+        'tokenable_id'   => $user->_id,
+        'tokenable_type' => get_class($user),
+        'name'           => 'auth_token',
+        'token'          => hash('sha256', $plainTextToken),
+        'abilities'      => ['*'],
+        'created_at'     => now(),
+        'updated_at'     => now(),
+    ]);
+
+    $tokenString = $user->_id . '|' . $plainTextToken;
+    // --- نهاية الحل اليدوي ---
+
+    return response()->json([
+        'message' => 'Logged in successfully!',
+        'user' => $user,
+        'token' => $tokenString // نرسل التوكن اليدوي
+    ], 200);
+}
+    // 3. Social Login
+    public function socialLogin(Request $request)
+{
+    $request->validate([
+        'token' => 'required',
+        'provider' => 'required|in:google,facebook,instagram'
+    ]);
+
+    try {
+        $socialUser = Socialite::driver($request->provider)->stateless()->user();
+
+        if (!$socialUser) {
+            return response()->json(['error' => 'Invalid credentials from provider'], 401);
         }
 
-      
+        $user = User::where('email', $socialUser->getEmail())->first();
+
+        if (!$user) {
+            $user = User::create([
+                'name' => $socialUser->getName(),
+                'email' => $socialUser->getEmail(),
+                'password' => Hash::make(Str::random(16)),
+                $request->provider . '_id' => $socialUser->getId(),
+                'avatar' => $socialUser->getAvatar(),
+            ]);
+        }
+
+        // --- التعديل الجوهري هنا ---
         $plainTextToken = Str::random(40);
-        $token = $user->tokens()->create([
-            'name' => 'auth_token',
-            'token' => hash('sha256', $plainTextToken),
-            'abilities' => ['*'],
+
+        // بنخزن في المونجو مباشرة عشان نهرب من الـ SQL Error
+        \Illuminate\Support\Facades\DB::table('personal_access_tokens')->insert([
+            'tokenable_id'   => $user->_id,
+            'tokenable_type' => get_class($user),
+            'name'           => 'auth_token',
+            'token'          => hash('sha256', $plainTextToken),
+            'abilities'      => ['*'],
+            'created_at'     => now(),
+            'updated_at'     => now(),
         ]);
 
-        $tokenString = $token->_id . '|' . $plainTextToken;
+        $tokenString = $user->_id . '|' . $plainTextToken;
 
         return response()->json([
-            'message' => 'Logged in successfully!',
+            'status' => true,
             'user' => $user,
             'token' => $tokenString
         ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Authentication failed',
+            'message' => $e->getMessage()
+        ], 401);
     }
-
-    // 3. Social Login
-    public function socialLogin(Request $request)
-    {
-        $request->validate([
-            'token' => 'required',
-            'provider' => 'required|in:google,facebook,instagram'
-        ]);
-
-        try {
-            $socialUser = Socialite::driver($request->provider)->stateless()->user();
-
-            if (!$socialUser) {
-                return response()->json(['error' => 'Invalid credentials from provider'], 401);
-            }
-
-            $user = User::where('email', $socialUser->getEmail())->first();
-
-            if (!$user) {
-                $user = User::create([
-                    'name' => $socialUser->getName(),
-                    'email' => $socialUser->getEmail(),
-                    'password' => Hash::make(Str::random(16)),
-                    $request->provider . '_id' => $socialUser->getId(),
-                    'avatar' => $socialUser->getAvatar(),
-                ]);
-            }
-
-           
-            $plainTextToken = Str::random(40);
-            $token = $user->tokens()->create([
-                'name' => 'auth_token',
-                'token' => hash('sha256', $plainTextToken),
-                'abilities' => ['*'],
-            ]);
-
-            $tokenString = $token->_id . '|' . $plainTextToken;
-
-            return response()->json([
-                'status' => true,
-                'user' => $user,
-                'token' => $tokenString
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Authentication failed',
-                'message' => $e->getMessage()
-            ], 401);
-        }
-    }
-
+}
     // 4. Forgot Password
     public function forgotPassword(Request $request)
     {
