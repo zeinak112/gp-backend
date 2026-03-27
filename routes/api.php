@@ -21,3 +21,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/profile/update-physical', [UserController::class, 'updatePhysicalInfo']);
 });
 
+Route::get('/test-api', function () {
+    return response()->json(['message' => 'Hello Zeina, API is working!']);
+});
