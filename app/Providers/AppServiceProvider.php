@@ -1,10 +1,9 @@
 <?php
 
 namespace App\Providers;
-
 use Illuminate\Support\ServiceProvider;
-use Laravel\Sanctum\Sanctum;
-use MongoDB\Laravel\Auth\AccessToken as PersonalAccessToken;
+use Illuminate\Support\Facades\Artisan; 
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,9 +18,13 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+   public function boot(): void
     {
-        // السطر ده هو اللي بيربط Sanctum بالمونجو صح
-        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+    
+        Artisan::call('config:clear');
+        Artisan::call('cache:clear');
+
+        
+       
     }
 }
