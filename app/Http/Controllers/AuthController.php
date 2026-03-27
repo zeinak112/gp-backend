@@ -24,30 +24,29 @@ class AuthController extends Controller
             return response()->json(['message' => 'The email has already been taken.'], 422);
         }
 
-       
+   // 1. إنشاء المستخدم (شغال تمام عندك)
 $user = User::create([
     'name' => $request->name,
     'email' => $request->email,
     'password' => Hash::make($request->password),
 ]);
 
-
+// 2. توليد التوكن يدوياً
 $plainTextToken = \Illuminate\Support\Str::random(40);
 
+// 3. الحل الصحيح لمشكلة الـ collection() في MongoDB
+// هنستخدم الـ DB Query Builder بس بالطريقة اللي MongoDB بيفهمها
+\Illuminate\Support\Facades\DB::table('personal_access_tokens')->insert([
+    'tokenable_id'   => $user->_id, // في المونجو بنستخدم _id
+    'tokenable_type' => get_class($user),
+    'name'           => 'auth_token',
+    'token'          => hash('sha256', $plainTextToken),
+    'abilities'      => ['*'],
+    'created_at'     => now(),
+    'updated_at'     => now(),
+]);
 
-$tokenData = \Illuminate\Support\Facades\DB::connection('mongodb')
-    ->collection('personal_access_tokens')
-    ->insert([
-        'tokenable_id'   => $user->_id,
-        'tokenable_type' => get_class($user),
-        'name'           => 'auth_token',
-        'token'          => hash('sha256', $plainTextToken),
-        'abilities'      => ['*'],
-        'created_at'     => now(),
-        'updated_at'     => now(),
-    ]);
-
-
+// 4. تجهيز النص النهائي
 $tokenString = $user->_id . '|' . $plainTextToken;
 
 return response()->json([
@@ -56,7 +55,6 @@ return response()->json([
     'token' => $tokenString 
 ], 201);
     }
-
     // 2. Login
     public function login(Request $request)
     {
