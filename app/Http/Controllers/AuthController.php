@@ -26,14 +26,8 @@ class AuthController extends Controller
              'password' => Hash::make($request->password),
         ]);
 
-       DB::connection('mongodb')->collection('profiles')->insert([
-             'user_id' => $user->_id, 
-             'gender' => null,
-             'height' => null,
-             'weight' => null,
-             'created_at' => now(),
-             'updated_at' => now()
-]);
+      
+
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -90,11 +84,7 @@ class AuthController extends Controller
                     'avatar' => $socialUser->getAvatar(),
                 ]);
 
-                DB::connection('mongodb')->collection('profiles')->insert([
-                    'user_id' => $user->_id,
-                    'gender' => null,
-                    'created_at' => now(),
-                ]);
+               
             }
 
             $token = $user->createToken('auth_token')->plainTextToken;
