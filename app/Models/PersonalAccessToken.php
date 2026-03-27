@@ -2,22 +2,16 @@
 
 namespace App\Models;
 
-use MongoDB\Laravel\Eloquent\Model; // موديل المونجو
-use Laravel\Sanctum\Contracts\HasAbilities; // العقد بتاع الصلاحيات
+use MongoDB\Laravel\Eloquent\Model;
+use Laravel\Sanctum\Contracts\HasAbilities;
 
 class PersonalAccessToken extends Model implements HasAbilities
 {
     protected $connection = 'mongodb';
-    protected $collection = 'personal_access_tokens'; // تأكدي من اسم الكولكشن
+    protected $collection = 'personal_access_tokens';
 
     protected $fillable = [
-        'name',
-        'token',
-        'abilities',
-        'last_used_at',
-        'expires_at',
-        'tokenable_id',
-        'tokenable_type'
+        'name', 'token', 'abilities', 'last_used_at', 'expires_at', 'tokenable_id', 'tokenable_type'
     ];
 
     protected $casts = [
@@ -26,13 +20,17 @@ class PersonalAccessToken extends Model implements HasAbilities
         'expires_at' => 'datetime',
     ];
 
-    // الـ Relationship الأساسية
+    // الدالة اللي Sanctum بيدور عليها ومسببة الـ 500
+    public static function findToken($token)
+    {
+        return static::where('token', hash('sha256', $token))->first();
+    }
+
     public function tokenable()
     {
         return $this->morphTo();
     }
 
-    // دوال الصلاحيات اللي Sanctum بيحتاجها
     public function can($ability): bool
     {
         return in_array('*', $this->abilities) || in_array($ability, $this->abilities);
