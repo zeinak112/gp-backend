@@ -7,43 +7,45 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
     // 1. Register
-public function register(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|email',
-    
-        'password' => ['required', 'min:8', 'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[@$!%*#?&]/'],
-    ]);
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'password' => ['required', 'min:8', 'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[@$!%*#?&]/'],
+        ]);
 
-   
-    $userExists = User::where('email', $request->email)->first();
-    if ($userExists) {
+        $userExists = User::where('email', $request->email)->first();
+        if ($userExists) {
+            return response()->json(['message' => 'The email has already been taken.'], 422);
+        }
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        $plainTextToken = Str::random(40);
+        $token = $user->tokens()->create([
+            'name' => 'auth_token',
+            'token' => hash('sha256', $plainTextToken),
+            'abilities' => ['*'],
+        ]);
+
+        $tokenString = $token->_id . '|' . $plainTextToken;
+
         return response()->json([
-            'message' => 'The email has already been taken.',
-        ], 422);
+            'message' => 'Account created successfully',
+            'user' => $user,
+            'token' => $tokenString 
+        ], 201);
     }
 
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-    ]);
-    
-    
-    $token = $user->createToken('auth_token')->plainTextToken;
-
-    return response()->json([
-        'message' => 'Account created successfully',
-        'user' => $user,
-        'token' => $token
-    ], 201);
-}
     // 2. Login
     public function login(Request $request)
     {
@@ -52,19 +54,26 @@ public function register(Request $request)
             'password' => 'required'
         ]);
 
-      
-        $user = User::on('mongodb')->where('email', $request->email)->first();
+        $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+      
+        $plainTextToken = Str::random(40);
+        $token = $user->tokens()->create([
+            'name' => 'auth_token',
+            'token' => hash('sha256', $plainTextToken),
+            'abilities' => ['*'],
+        ]);
+
+        $tokenString = $token->_id . '|' . $plainTextToken;
 
         return response()->json([
             'message' => 'Logged in successfully!',
             'user' => $user,
-            'token' => $token
+            'token' => $tokenString
         ], 200);
     }
 
@@ -83,10 +92,10 @@ public function register(Request $request)
                 return response()->json(['error' => 'Invalid credentials from provider'], 401);
             }
 
-            $user = User::on('mongodb')->where('email', $socialUser->getEmail())->first();
+            $user = User::where('email', $socialUser->getEmail())->first();
 
             if (!$user) {
-                $user = User::on('mongodb')->create([
+                $user = User::create([
                     'name' => $socialUser->getName(),
                     'email' => $socialUser->getEmail(),
                     'password' => Hash::make(Str::random(16)),
@@ -95,12 +104,20 @@ public function register(Request $request)
                 ]);
             }
 
-            $token = $user->createToken('auth_token')->plainTextToken;
+            // نطبق نفس الحل اليدوي هنا أيضاً
+            $plainTextToken = Str::random(40);
+            $token = $user->tokens()->create([
+                'name' => 'auth_token',
+                'token' => hash('sha256', $plainTextToken),
+                'abilities' => ['*'],
+            ]);
+
+            $tokenString = $token->_id . '|' . $plainTextToken;
 
             return response()->json([
                 'status' => true,
                 'user' => $user,
-                'token' => $token
+                'token' => $tokenString
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -114,7 +131,7 @@ public function register(Request $request)
     public function forgotPassword(Request $request)
     {
         $request->validate(['email' => 'required|email']);
-        $user = User::on('mongodb')->where('email', $request->email)->first();
+        $user = User::where('email', $request->email)->first();
         if (!$user) return response()->json(['message' => 'Email not found!'], 404);
 
         return response()->json(['status' => 'success', 'message' => 'OTP sent', 'otp_code' => '1234'], 200);
@@ -123,8 +140,8 @@ public function register(Request $request)
     // 5. Reset Password
     public function resetPassword(Request $request)
     {
-        $request->validate(['email' => 'required|email', 'password' => 'required|confirmed|min:8']);
-        $user = User::on('mongodb')->where('email', $request->email)->first();
+        $request->validate(['email' => 'required|email', 'password' => 'required|min:8']);
+        $user = User::where('email', $request->email)->first();
         if (!$user) return response()->json(['message' => 'User not found!'], 404);
 
         $user->update(['password' => Hash::make($request->password)]);
