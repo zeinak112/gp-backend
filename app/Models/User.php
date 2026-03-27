@@ -27,5 +27,15 @@ class User extends Eloquent implements Authenticatable
         'password', 'remember_token',
     ];
 
+
+
+    
+
+     public function tokens()
+        {
+  
+           return $this->hasMany(\Laravel\Sanctum\PersonalAccessToken::class, 'tokenable_id');
+          }
+
     
 }
