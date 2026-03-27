@@ -20,12 +20,15 @@ class PersonalAccessToken extends Model implements HasAbilities
         'expires_at' => 'datetime',
     ];
 
-    // الدالة اللي Sanctum بيدور عليها ومسببة الـ 500
+   
     public static function findToken($token)
-    {
-        return static::where('token', hash('sha256', $token))->first();
-    }
-
+{
+    
+    $plainToken = strpos($token, '|') !== false ? explode('|', $token, 2)[1] : $token;
+    
+    return static::where('token', hash('sha256', $plainToken))->first() 
+           ?? static::where('token', $plainToken)->first();
+}
     public function tokenable()
     {
         return $this->morphTo();
