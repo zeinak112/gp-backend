@@ -15,7 +15,7 @@ class UserController extends Controller
     
     $user = $request->user();
 
-    // استبدلي collection بـ table هنا
+    
     DB::connection('mongodb')->table('profiles')->updateOrInsert(
         ['user_id' => (string) $user->_id], 
         [
@@ -40,7 +40,7 @@ class UserController extends Controller
 
     $user = $request->user();
 
-    // استبدلي collection بـ table هنا
+    
     DB::connection('mongodb')->table('profiles')->updateOrInsert(
         ['user_id' => (string) $user->_id],
         [
@@ -61,4 +61,80 @@ class UserController extends Controller
 
 }
 
+
+public function updateAge(Request $request)
+{
+    $request->validate([
+        'age' => 'required|integer|min:10|max:100'
+    ]);
+
+    $user = $request->user();
+
+    DB::connection('mongodb')->table('profiles')->updateOrInsert(
+        ['user_id' => (string) $user->_id],
+        [
+            'age' => (int) $request->age,
+            'updated_at' => now()
+        ]
+    );
+
+    
+    return response()->json(['status' => true, 'message' => 'Age updated successfully!']);
+}
+
+public function updateGoal(Request $request)
+{
+    $request->validate([
+       
+        'goal' => 'required|string|in:Lose Weight,Build Muscle,Physical Therapy,lose weight,build muscle,physical therapy'
+    ]);
+
+    $user = $request->user();
+
+   
+    $cleanGoal = strtolower($request->goal);
+
+    DB::connection('mongodb')->table('profiles')->updateOrInsert(
+        ['user_id' => (string) $user->_id],
+        [
+            'goal' => $cleanGoal,
+            'updated_at' => now()
+        ]
+    );
+
+    return response()->json([
+        'status' => true, 
+        'message' => 'Goal updated successfully!',
+        'stored_as' => $cleanGoal // عشان تشوفي في Postman إنها اتحفظت سمول
+    ]);
+}
+
+
+public function updateTargetMuscles(Request $request)
+{
+    $request->validate([
+        'target_muscles' => 'required|array',
+       
+        'target_muscles.*' => 'string|in:Shoulder,Triceps,Biceps,Chest,Neck,Legs,Abs,Salf Muscles,Trapezius,Deltoids,Hips,shoulder,triceps,biceps,chest,neck,legs,abs,salf muscles,trapezius,deltoids,hips'
+    ]);
+
+    $user = $request->user();
+
+    
+    $lowerMuscles = array_map('strtolower', $request->target_muscles);
+
+    DB::connection('mongodb')->table('profiles')->updateOrInsert(
+        ['user_id' => (string) $user->_id],
+        [
+            'target_muscles' => $lowerMuscles,
+            'updated_at' => now()
+        ]
+    );
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Target muscles updated successfully!',
+        'data' => ['target_muscles' => $lowerMuscles]
+    ]);
+}
 }

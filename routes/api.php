@@ -19,7 +19,12 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/profile/update-gender', [UserController::class, 'updateGender']);
     Route::post('/profile/update-physical', [UserController::class, 'updatePhysicalInfo']);
+    Route::post('/profile/update-age', [UserController::class, 'updateAge']);
+    Route::post('/profile/update-goal', [UserController::class, 'updateGoal']);
+    Route::post('/profile/update-muscles', [UserController::class, 'updateTargetMuscles']);
 });
+
+
 
 Route::get('/test-api', function () {
     return response()->json(['message' => 'Hello Zeina, API is working!']);
