@@ -105,7 +105,7 @@ public function updateGoal(Request $request)
     return response()->json([
         'status' => true, 
         'message' => 'Goal updated successfully!',
-        'stored_as' => $cleanGoal // عشان تشوفي في Postman إنها اتحفظت سمول
+        'stored_as' => $cleanGoal 
     ]);
 }
 

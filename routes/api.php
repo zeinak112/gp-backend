@@ -30,25 +30,3 @@ Route::get('/test-api', function () {
     return response()->json(['message' => 'Hello Zeina, API is working!']);
 });
 
-
-Route::get('/test-env', function () {
-    return response()->json([
-        'status' => 'Checking Environment Variables...',
-        'google' => [
-            'id' => env('GOOGLE_CLIENT_ID') ? '✅ Found' : '❌ Not Found',
-            'secret' => env('GOOGLE_CLIENT_SECRET') ? '✅ Found' : '❌ Not Found',
-            'redirect' => env('GOOGLE_REDIRECT_URL') ?: '⚠️ Missing',
-        ],
-        'facebook' => [
-            'id' => env('FACEBOOK_CLIENT_ID') ? '✅ Found' : '❌ Not Found',
-            'secret' => env('FACEBOOK_CLIENT_SECRET') ? '✅ Found' : '❌ Not Found',
-            'redirect' => env('FACEBOOK_REDIRECT_URL') ?: '⚠️ Missing',
-        ],
-        'instagram' => [
-            'id' => env('INSTAGRAM_CLIENT_ID') ? '✅ Found' : '❌ Not Found',
-            'secret' => env('INSTAGRAM_CLIENT_SECRET') ? '✅ Found' : '❌ Not Found',
-            'redirect' => env('INSTAGRAM_REDIRECT_URL') ?: '⚠️ Missing',
-        ],
-        'app_url' => env('APP_URL'),
-    ]);
-});

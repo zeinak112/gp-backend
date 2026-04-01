@@ -31,7 +31,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // توليد توكن يدوي لـ Sanctum عشان يشتغل مع MongoDB
+      
         $plainTextToken = Str::random(40);
         
         DB::connection('mongodb')->table('personal_access_tokens')->insert([
@@ -53,7 +53,7 @@ class AuthController extends Controller
         ], 201);
     }
 
-    // 2. Login (بنفس الطريقة)
+    // 2. Login 
     public function login(Request $request)
     {
         $request->validate([
@@ -91,12 +91,12 @@ class AuthController extends Controller
    public function socialLogin(Request $request)
     {
         $request->validate([
-            'token' => 'required', // التوكن اللي جاي من الفلاتر
+            'token' => 'required', 
             'provider' => 'required|in:google,facebook,instagram'
         ]);
 
         try {
-            // التعديل هنا: استخدمي userFromToken بدل user()
+          
             $socialUser = Socialite::driver($request->provider)
                             ->stateless()
                             ->userFromToken($request->token);
@@ -136,7 +136,7 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Authentication failed',
-                'message' => $e->getMessage() // هنا هيقولك ليه فشل بالظبط
+                'message' => $e->getMessage() 
             ], 401);
         }
     }
