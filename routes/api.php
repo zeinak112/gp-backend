@@ -30,3 +30,19 @@ Route::get('/test-api', function () {
     return response()->json(['message' => 'Hello Zeina, API is working!']);
 });
 
+Route::get('/get-all-users', function () {
+
+    $users = App\Models\User::all();
+
+    
+    foreach ($users as $user) {
+        $profile = Illuminate\Support\Facades\DB::connection('mongodb')
+            ->table('profiles')
+            ->where('user_id', (string) $user->_id)
+            ->first();
+            
+        $user->profile_info = $profile; // هنضيف خانة جديدة اسمها profile_info
+    }
+
+    return response()->json($users);
+});
