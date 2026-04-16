@@ -1,4 +1,3 @@
-
 <?php
 
 use App\Models\User;
@@ -7,23 +6,24 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 
 
-Route::get('/get-all-users', function () {
-    return User::all();
-});
-
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/social-login', [AuthController::class, 'socialLogin']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-Route::post('/reset-password', [AuthController::class, 'resetPassword']);   
+Route::post('/reset-password', [AuthController::class, 'resetPassword']); 
+
+
 Route::middleware('auth:sanctum')->group(function () {
+    
     Route::post('/profile/update-gender', [UserController::class, 'updateGender']);
     Route::post('/profile/update-physical', [UserController::class, 'updatePhysicalInfo']);
     Route::post('/profile/update-age', [UserController::class, 'updateAge']);
     Route::post('/profile/update-goal', [UserController::class, 'updateGoal']);
     Route::post('/profile/update-muscles', [UserController::class, 'updateTargetMuscles']);
+    
+    
+    Route::post('/user/update-full-profile', [UserController::class, 'updateFullProfile']);
 });
-
 
 
 Route::get('/test-api', function () {
@@ -31,18 +31,19 @@ Route::get('/test-api', function () {
 });
 
 Route::get('/get-all-users', function () {
-
-    $users = App\Models\User::all();
-
-    
+    $users = User::all();
     foreach ($users as $user) {
         $profile = Illuminate\Support\Facades\DB::connection('mongodb')
             ->table('profiles')
             ->where('user_id', (string) $user->_id)
             ->first();
             
-        $user->profile_info = $profile; // هنضيف خانة جديدة اسمها profile_info
+        $user->profile_info = $profile; 
     }
-
     return response()->json($users);
 });
+
+
+
+
+

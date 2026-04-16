@@ -137,4 +137,41 @@ public function updateTargetMuscles(Request $request)
         'data' => ['target_muscles' => $lowerMuscles]
     ]);
 }
+
+
+public function updateFullProfile(Request $request)
+    {
+    
+        $request->validate([
+            'birthdate' => 'nullable|date',
+            'age'       => 'nullable|integer|min:10|max:100',
+            'gender'    => 'nullable|in:male,female,Male,Female',
+            'height'    => 'nullable|numeric',
+            'weight'    => 'nullable|numeric',
+        ]);
+
+        $user = $request->user();
+
+        
+        DB::connection('mongodb')->table('profiles')->updateOrInsert(
+            ['user_id' => (string) $user->_id],
+            [
+                'birthdate'  => $request->birthdate, 
+                'age'        => $request->age ? (int) $request->age : null,
+                'gender'     => $request->gender ? strtolower($request->gender) : null,
+                'height'     => $request->height,
+                'weight'     => $request->weight,
+                'updated_at' => now()
+            ]
+        );
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Profile updated successfully!',
+            'data' => [
+                'birthdate' => $request->birthdate,
+                'age'       => $request->age
+            ]
+        ]);
+    }
 }
