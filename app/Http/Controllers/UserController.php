@@ -140,38 +140,40 @@ public function updateTargetMuscles(Request $request)
 
 
 public function updateFullProfile(Request $request)
-    {
+{
     
-        $request->validate([
-            'birthdate' => 'nullable|date',
-            'age'       => 'nullable|integer|min:10|max:100',
-            'gender'    => 'nullable|in:male,female,Male,Female',
-            'height'    => 'nullable|numeric',
-            'weight'    => 'nullable|numeric',
-        ]);
+    $request->validate([
+        'birthdate' => 'nullable',
+        'age'       => 'nullable',
+        'gender'    => 'nullable',
+        'height'    => 'nullable',
+        'weight'    => 'nullable',
+    ]);
 
-        $user = $request->user();
+    $user = $request->user();
 
-        
-        DB::connection('mongodb')->table('profiles')->updateOrInsert(
-            ['user_id' => (string) $user->_id],
-            [
-                'birthdate'  => $request->birthdate, 
-                'age'        => $request->age ? (int) $request->age : null,
-                'gender'     => $request->gender ? strtolower($request->gender) : null,
-                'height'     => $request->height,
-                'weight'     => $request->weight,
-                'updated_at' => now()
-            ]
-        );
+    
+    $data = [
+        'birthdate'  => $request->birthdate,
+        'gender'     => $request->gender ? strtolower($request->gender) : null,
+        'height'     => $request->height,
+        'weight'     => $request->weight,
+        'updated_at' => now()
+    ];
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Profile updated successfully!',
-            'data' => [
-                'birthdate' => $request->birthdate,
-                'age'       => $request->age
-            ]
-        ]);
+    
+    if ($request->has('age')) {
+        $data['age'] = (int) $request->age;
     }
+
+    DB::connection('mongodb')->table('profiles')->updateOrInsert(
+        ['user_id' => (string) $user->_id],
+        $data
+    );
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Profile updated successfully!'
+    ]);
+}
 }
