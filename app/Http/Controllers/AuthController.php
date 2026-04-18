@@ -166,9 +166,11 @@ class AuthController extends Controller
     
 public function getMe(Request $request)
 {
+    $user = $request->user();
+
     return response()->json([
         'status' => true,
-        'user' => $request->user()
-    ]);
+        'user_name' => $user->name 
+    ], 200);
 }
 }
