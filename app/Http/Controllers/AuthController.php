@@ -162,4 +162,13 @@ class AuthController extends Controller
         $user->update(['password' => Hash::make($request->password)]);
         return response()->json(['status' => 'success', 'message' => 'Password reset successfully.'], 200);
     }
+
+    
+public function getMe(Request $request)
+{
+    return response()->json([
+        'status' => true,
+        'user' => $request->user()
+    ]);
+}
 }

@@ -20,8 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/profile/update-age', [UserController::class, 'updateAge']);
     Route::post('/profile/update-goal', [UserController::class, 'updateGoal']);
     Route::post('/profile/update-muscles', [UserController::class, 'updateTargetMuscles']);
-    
-    
+    Route::get('/user/me', [AuthController::class, 'getMe']);
     Route::post('/user/update-full-profile', [UserController::class, 'updateFullProfile']);
 });
 
