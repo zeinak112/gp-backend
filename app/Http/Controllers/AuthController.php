@@ -164,17 +164,18 @@ class AuthController extends Controller
     }
 
     
-    // etMe
+
+    
     public function getMe(Request $request)
 {
     $user = $request->user();
-
     $currentTime = now();
-    
-    $lastLogin = isset($user->last_login_at) ? \Carbon\Carbon::parse($user->last_login_at) : null;
 
-   
-    if (!$lastLogin || $currentTime->diffInSeconds($lastLogin) >= 10) {
+    // التأكد من جلب قيمة last_login_at بشكل صحيح من المونجو
+    $lastLogin = $user->last_login_at;
+
+    // لو مفيش وقت مسجل أو فات أكتر من 30 ثانية
+    if (!$lastLogin || $currentTime->diffInSeconds(\Carbon\Carbon::parse($lastLogin)) >= 30) {
         $user->increment('login_count');
         $user->last_login_at = $currentTime;
         $user->save();
