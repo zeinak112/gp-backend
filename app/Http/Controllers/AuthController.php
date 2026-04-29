@@ -166,19 +166,29 @@ class AuthController extends Controller
     
 
     
-    public function getMe(Request $request)
+   public function getMe(Request $request)
 {
     $user = $request->user();
     $currentTime = now();
 
-    // التأكد من جلب قيمة last_login_at بشكل صحيح من المونجو
+    // هنجيب الوقت يدوي عشان نضمن إنه مش Cache
     $lastLogin = $user->last_login_at;
 
-    // لو مفيش وقت مسجل أو فات أكتر من 30 ثانية
+    // الشرط: لو أول مرة أو فات 30 ثانية (للتجربة)
     if (!$lastLogin || $currentTime->diffInSeconds(\Carbon\Carbon::parse($lastLogin)) >= 30) {
-        $user->increment('login_count');
-        $user->last_login_at = $currentTime;
-        $user->save();
+        
+        // تحديث إجباري ومباشر في الداتابيز
+        \Illuminate\Support\Facades\DB::connection('mongodb')
+            ->table('users')
+            ->where('_id', $user->_id)
+            ->update([
+                'login_count' => ($user->login_count ?? 0) + 1,
+                'last_login_at' => $currentTime->toDateTimeString(),
+                'updated_at' => $currentTime->toDateTimeString()
+            ]);
+            
+        // تحديث النسخة اللي في إيدنا دلوقتي عشان الـ Response يطلع صح
+        $user = \App\Models\User::find($user->_id);
     }
 
     return response()->json([
