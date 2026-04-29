@@ -30,15 +30,21 @@ Route::get('/test-api', function () {
 });
 
 Route::get('/get-all-users', function () {
-    $users = User::all();
+    $users = \App\Models\User::all();
     foreach ($users as $user) {
         $profile = Illuminate\Support\Facades\DB::connection('mongodb')
             ->table('profiles')
-            ->where('user_id', (string) $user->_id)
+            ->where('user_id', $user->_id) 
             ->first();
-            
+        if (!$profile) {
+            $profile = Illuminate\Support\Facades\DB::connection('mongodb')
+                ->table('profiles')
+                ->where('user_id', (string) $user->_id)
+                ->first();
+        }
         $user->profile_info = $profile; 
     }
+    
     return response()->json($users);
 });
 
