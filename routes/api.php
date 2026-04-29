@@ -28,26 +28,22 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/test-api', function () {
     return response()->json(['message' => 'Hello Zeina, API is working!']);
 });
-
 Route::get('/get-all-users', function () {
     $users = \App\Models\User::all();
+    
     foreach ($users as $user) {
         $profile = Illuminate\Support\Facades\DB::connection('mongodb')
             ->table('profiles')
             ->where('user_id', $user->_id) 
+            ->orWhere('user_id', (string) $user->_id) 
+            ->orWhere('user_id', new \MongoDB\BSON\ObjectId((string) $user->_id)) 
             ->first();
-        if (!$profile) {
-            $profile = Illuminate\Support\Facades\DB::connection('mongodb')
-                ->table('profiles')
-                ->where('user_id', (string) $user->_id)
-                ->first();
-        }
+            
         $user->profile_info = $profile; 
     }
     
     return response()->json($users);
 });
-
 
 
 
