@@ -166,33 +166,32 @@ class AuthController extends Controller
 
 
 
-    
     public function getMe(Request $request)
 {
     $user = $request->user();
     $currentTime = now();
 
-    $lastLogin = $user->last_login_at;
-    if (!$lastLogin || $currentTime->diffInSeconds(\Carbon\Carbon::parse($lastLogin)) >= 30) {
-        
-        
-        \Illuminate\Support\Facades\DB::connection('mongodb')
-            ->table('users')
-            ->where('_id', (string) $user->_id) 
-            ->update([
-                'login_count' => ($user->login_count ?? 0) + 1,
-                'last_login_at' => $currentTime->toDateTimeString(),
-                'updated_at' => $currentTime->toDateTimeString()
-            ]);
-            
-        
-        $user = \App\Models\User::find($user->_id);
-    }
+    // الطريقة دي بتجبر الداتابيز تحدث العداد والوقت في خطوة واحدة
+    $updated = \Illuminate\Support\Facades\DB::connection('mongodb')
+        ->table('users')
+        ->where('_id', (string) $user->_id)
+        ->where(function($query) use ($currentTime) {
+            // حدث فقط لو مفيش وقت مسجل OR فات أكتر من 30 ثانية
+            $query->whereNull('last_login_at')
+                  ->orWhere('last_login_at', '<=', $currentTime->subSeconds(30)->toDateTimeString());
+        })
+        ->increment('login_count', 1, [
+            'last_login_at' => now()->toDateTimeString(),
+            'updated_at' => now()->toDateTimeString()
+        ]);
+
+    // هنجيب البيانات الجديدة عشان نعرضها في الـ Response
+    $freshUser = \App\Models\User::find($user->_id);
 
     return response()->json([
         'status' => true,
-        'user_name' => $user->name,
-        'login_count' => $user->login_count 
+        'user_name' => $freshUser->name,
+        'login_count' => $freshUser->login_count ?? 0
     ], 200);
 }
 }
