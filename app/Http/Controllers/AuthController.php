@@ -174,7 +174,7 @@ class AuthController extends Controller
     $lastLogin = isset($user->last_login_at) ? \Carbon\Carbon::parse($user->last_login_at) : null;
 
    
-    if (!$lastLogin || $currentTime->diffInMinutes($lastLogin) >= 1) {
+    if (!$lastLogin || $currentTime->diffInSeconds($lastLogin) >= 10) {
         $user->increment('login_count');
         $user->last_login_at = $currentTime;
         $user->save();
