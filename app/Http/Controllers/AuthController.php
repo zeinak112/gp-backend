@@ -163,37 +163,36 @@ class AuthController extends Controller
         return response()->json(['status' => 'success', 'message' => 'Password reset successfully.'], 200);
     }
 
-    
+
+
 
     
-   public function getMe(Request $request)
+    public function getMe(Request $request)
 {
     $user = $request->user();
     $currentTime = now();
 
-    // هنجيب الوقت يدوي عشان نضمن إنه مش Cache
     $lastLogin = $user->last_login_at;
-
-    // الشرط: لو أول مرة أو فات 30 ثانية (للتجربة)
     if (!$lastLogin || $currentTime->diffInSeconds(\Carbon\Carbon::parse($lastLogin)) >= 30) {
         
-        // تحديث إجباري ومباشر في الداتابيز
+        
         \Illuminate\Support\Facades\DB::connection('mongodb')
             ->table('users')
-            ->where('_id', $user->_id)
+            ->where('_id', (string) $user->_id) 
             ->update([
                 'login_count' => ($user->login_count ?? 0) + 1,
                 'last_login_at' => $currentTime->toDateTimeString(),
                 'updated_at' => $currentTime->toDateTimeString()
             ]);
             
-        // تحديث النسخة اللي في إيدنا دلوقتي عشان الـ Response يطلع صح
+        
         $user = \App\Models\User::find($user->_id);
     }
 
     return response()->json([
         'status' => true,
-        'user_name' => $user->name 
+        'user_name' => $user->name,
+        'login_count' => $user->login_count 
     ], 200);
 }
 }
