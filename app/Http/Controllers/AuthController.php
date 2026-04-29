@@ -166,18 +166,23 @@ class AuthController extends Controller
     
     // etMe
     public function getMe(Request $request)
-    {
-        $user = $request->user();  
-        $currentTime = now();      
-        $lastLogin = isset($user->last_login_at) ? \Carbon\Carbon::parse($user->last_login_at) : null;      
-        if (!$lastLogin || $currentTime->diffInMinutes($lastLogin) >= 1) {
-            $user->increment('login_count'); 
-            $user->last_login_at = $currentTime; 
-            $user->save(); 
-        }
-        return response()->json([
-            'status' => true,
-            'user_name' => $user->name 
-        ], 200);
+{
+    $user = $request->user();
+
+    $currentTime = now();
+    
+    $lastLogin = isset($user->last_login_at) ? \Carbon\Carbon::parse($user->last_login_at) : null;
+
+   
+    if (!$lastLogin || $currentTime->diffInMinutes($lastLogin) >= 1) {
+        $user->increment('login_count');
+        $user->last_login_at = $currentTime;
+        $user->save();
     }
+
+    return response()->json([
+        'status' => true,
+        'user_name' => $user->name 
+    ], 200);
+}
 }
