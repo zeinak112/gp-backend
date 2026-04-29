@@ -170,22 +170,18 @@ class AuthController extends Controller
 {
     $user = $request->user();
     $currentTime = now();
-
-    // الطريقة دي بتجبر الداتابيز تحدث العداد والوقت في خطوة واحدة
     $updated = \Illuminate\Support\Facades\DB::connection('mongodb')
         ->table('users')
         ->where('_id', (string) $user->_id)
-        ->where(function($query) use ($currentTime) {
-            // حدث فقط لو مفيش وقت مسجل OR فات أكتر من 30 ثانية
+        ->where(function($query) use ($currentTime) {           
             $query->whereNull('last_login_at')
-                  ->orWhere('last_login_at', '<=', $currentTime->subSeconds(30)->toDateTimeString());
+                  ->orWhere('last_login_at', '<=', $currentTime->subMinutes(15)->toDateTimeString());
         })
         ->increment('login_count', 1, [
             'last_login_at' => now()->toDateTimeString(),
             'updated_at' => now()->toDateTimeString()
         ]);
-
-    // هنجيب البيانات الجديدة عشان نعرضها في الـ Response
+ 
     $freshUser = \App\Models\User::find($user->_id);
 
     return response()->json([
