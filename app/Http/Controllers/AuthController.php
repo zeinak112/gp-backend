@@ -140,54 +140,76 @@ class AuthController extends Controller
             ], 401);
         }
     }
-    
-
     // 4. Forgot Password
     public function forgotPassword(Request $request)
     {
         $request->validate(['email' => 'required|email']);
+        
         $user = User::where('email', $request->email)->first();
-        if (!$user) return response()->json(['message' => 'Email not found!'], 404);
+        if (!$user) {
+            return response()->json(['message' => 'Email not found!'], 404);
+        }
 
-        return response()->json(['status' => 'success', 'message' => 'OTP sent', 'otp_code' => '1234'], 200);
+        return response()->json([
+            'status' => 'success', 
+            'message' => 'OTP sent', 
+            'otp_code' => '1234'
+        ], 200);
     }
 
     // 5. Reset Password
     public function resetPassword(Request $request)
     {
-        $request->validate(['email' => 'required|email', 'password' => 'required|min:8']);
-        $user = User::where('email', $request->email)->first();
-        if (!$user) return response()->json(['message' => 'User not found!'], 404);
+        $request->validate([
+            'email'    => 'required|email', 
+            'password' => 'required|min:8',
+            'otp'      => 'required'
+        ]);
 
-        $user->update(['password' => Hash::make($request->password)]);
-        return response()->json(['status' => 'success', 'message' => 'Password reset successfully.'], 200);
+        if ($request->otp !== '1234') {
+            return response()->json(['message' => 'Invalid OTP code!'], 422);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json(['message' => 'User not found!'], 404);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        return response()->json([
+            'status' => 'success', 
+            'message' => 'Password reset successfully.'
+        ], 200);
     }
 
-
-
-
+    // 6. Throttled Login Counter
     public function getMe(Request $request)
-{
-    $user = $request->user();
-    $currentTime = now();
-    $updated = \Illuminate\Support\Facades\DB::connection('mongodb')
-        ->table('users')
-        ->where('_id', (string) $user->_id)
-        ->where(function($query) use ($currentTime) {           
-            $query->whereNull('last_login_at')
-                  ->orWhere('last_login_at', '<=', $currentTime->subMinutes(15)->toDateTimeString());
-        })
-        ->increment('login_count', 1, [
-            'last_login_at' => now()->toDateTimeString(),
-            'updated_at' => now()->toDateTimeString()
-        ]);
- 
-    $freshUser = \App\Models\User::find($user->_id);
+    {
+        $user = $request->user();
+        $currentTime = now();
+        
+        $updated = DB::connection('mongodb')
+            ->table('users')
+            ->where('_id', (string) $user->_id)
+            ->where(function($query) use ($currentTime) {           
+                $query->whereNull('last_login_at')
+                      ->orWhere('last_login_at', '<=', $currentTime->subMinutes(15)->toDateTimeString());
+            })
+            ->increment('login_count', 1, [
+                'last_login_at' => now()->toDateTimeString(),
+                'updated_at' => now()->toDateTimeString()
+            ]);
+     
+        $freshUser = User::find($user->_id);
 
-    return response()->json([
-        'status' => true,
-        'user_name' => $freshUser->name,
-        'login_count' => $freshUser->login_count ?? 0
-    ], 200);
+        return response()->json([
+            'status' => true,
+            'user_name' => $freshUser->name,
+            'login_count' => $freshUser->login_count ?? 0
+        ], 200);
+    }
 }
-}
+
