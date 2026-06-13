@@ -17,7 +17,7 @@ This repository contains the robust, scalable Backend RESTful APIs for **Fitness
 
 - **Language:** PHP 8.2+
 - **Framework:** Laravel (MVC Architecture)
-- **Database:** MySQL
+- **Database:**MongoDB
 - **API Testing & Documentation:** Postman
 - **Deployment:** Railway / Production Cloud Environments
 
